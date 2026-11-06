@@ -6,10 +6,12 @@
 -- DESCRIPTION:  serial comms
 --	       	    
 ---------------------------------------------------------------------------------
-
+-- Use IEEE library
 library IEEE;
+-- Allows use of std_logic
 use IEEE.STD_LOGIC_1164.ALL;
-USE ieee.numeric_std.ALL; 
+-- Allows use of more arithmetic options, and signed and unsigned
+use IEEE.NUMERIC_STD.ALL;
 
 
 
@@ -258,39 +260,4 @@ begin
 		end if;
 	end if;
 end process;
-
-               
-               
-			
 end vhdl;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

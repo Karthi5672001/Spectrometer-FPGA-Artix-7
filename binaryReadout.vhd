@@ -1,20 +1,28 @@
+-- Use IEEE library
 library IEEE;
+-- Allows use of std_logic
 use IEEE.STD_LOGIC_1164.ALL;
+-- Allows use of more arithmetic options, and signed and unsigned
 use IEEE.NUMERIC_STD.ALL;
+-- Import everything from the package named defs; imports all the constants, records, functions and types defined there
+use work.defs.all; 
 
-use work.defs.all;
-
-
+-- Generates a binary spectrum frame from BRAM data and streams it to the UART transmitter
 entity binaryReadout is
     port (
         -----------------------------------------------------------------------
         -- Control
         -----------------------------------------------------------------------
 
+        -- Fast-clock domain used for readout and transmission
         clock : in std_logic;
+        -- Returns the frame generator to its idle state
         reset : in std_logic;
+        -- Pulse indicating that a newly captured spectrum is ready
         trig  : in std_logic;
 
+        -- Integration time associated with the current spectrum
+        -- Included in the transmitted metadata
         integrationTime : in natural;
 
 
@@ -22,8 +30,12 @@ entity binaryReadout is
         -- Byte-transmitter interface
         -----------------------------------------------------------------------
 
+        -- Byte currently being transmitted
         txByte  : out std_logic_vector(7 downto 0);
+        -- Pulse requesting transmission of txByte
         txValid : out std_logic;
+        -- UART busy indicator
+        -- Transmission pauses until txWait returns low
         txWait  : in  std_logic;
 
 
@@ -31,9 +43,12 @@ entity binaryReadout is
         -- Status and spectrum-RAM interface
         -----------------------------------------------------------------------
 
+        -- Indicates whether frame generation is complete
         done : out std_logic;
 
+        -- Address of the spectrum sample being read
         addr : out std_logic_vector(8 downto 0);
+        -- Pixel value returned by the spectrum RAM
         data : in  std_logic_vector(15 downto 0)
     );
 end entity binaryReadout;
