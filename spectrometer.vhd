@@ -68,6 +68,8 @@ architecture Behavioral of spectrometer is
     signal reset         : std_logic := '1';
     signal fastResetMeta : std_logic := '1';
     signal fastReset     : std_logic := '1';
+    -- Signal for command counts
+    signal commandCount : unsigned(31 downto 0) := (others => '0');
     -- Signal for taking spectrum
     signal acquisitionTrigger : std_logic := '0';
     
@@ -175,7 +177,7 @@ begin
     LD0_R <= not ledRgb(0);
     LD0_G <= not ledRgb(1);
     LD0_B <= not ledRgb(2);
-    LD1 <= debug(0);
+    LD1 <= usb.rxCmd.valid;
     LD2 <= debug(1);
 
     -- Connects the top-level FPGA design to the driver module
@@ -248,6 +250,28 @@ begin
         end if;
     end process;
     
+    COMMAND_COUNTER : process(sysClk)
+    begin
+        if rising_edge(sysClk) then
+    
+            if reset = '1' then
+                commandCount <= (others => '0');
+    
+            elsif usb.rxCmd.valid = '1' then
+            
+                report "USB COMMAND RECEIVED";
+            
+                commandCount <= commandCount + 1;
+            
+                report "NEW COUNT = "
+                    & integer'image(
+                        to_integer(commandCount + 1)
+                    );
+            
+            end if;
+    
+        end if;
+    end process;
     -- Instantiates the binaryReadout module
     -- Responsible for taking the completed spectrum from memory and converting it into a stream of bytes for transmission to the PC.
     BINARY_READOUT_INST: binaryReadout
@@ -260,6 +284,8 @@ begin
             trig  => driverDoneFastRising,
             -- Integration Time is passed from binaryReadout to spectrometer
             integrationTime => integrationTimeReg,
+            -- command count
+            commandCount => commandCount,
             -- Current data byte to send
             txByte  => binaryTxByte,
             -- Valid tells if current byte is ready

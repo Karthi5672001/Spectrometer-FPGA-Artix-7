@@ -33,9 +33,9 @@ package defs is
     -- Existing command UART configuration
     ---------------------------------------------------------------------------
 
-    -- 10 MHz / 43 = approximately 232558 baud.
-    -- Configure the corresponding serial connection for 230400 baud.
-    constant SERIAL_CLK_DIV : natural := 43;
+    -- 10 MHz / 10 = approximately 1000000 baud.
+    -- Configure the corresponding serial connection for 1000000 baud.
+    constant SERIAL_CLK_DIV : natural := 10;
 
 
     ---------------------------------------------------------------------------
@@ -94,10 +94,11 @@ package defs is
     -- Remaining length       2 bytes
     -- Frame sequence         4 bytes
     -- Integration count      4 bytes
+    -- Command Count          4 bytes
     -- Pixel count            2 bytes
     --
     -- Total                 14 bytes
-    constant BINARY_METADATA_BYTES : natural := 14;
+    constant BINARY_METADATA_BYTES : natural := 18;
 
     -- 288 pixels, with two bytes for each pixel.
     constant BINARY_PIXEL_BYTES : natural := DATA_LEN * 2;
@@ -107,11 +108,11 @@ package defs is
     -- Total:
     --
     -- Sync       4
-    -- Metadata  14
+    -- Metadata  18
     -- Pixels   576
     -- CRC        2
     -- ------------
-    -- Total    596 bytes
+    -- Total    600 bytes
     constant BINARY_FRAME_BYTES : natural :=
         BINARY_SYNC_BYTES +
         BINARY_METADATA_BYTES +
@@ -327,19 +328,20 @@ package defs is
     ---------------------------------------------------------------------------
 
     component binaryReadout is
-        port (
-            clock           : in std_logic;
-            reset           : in std_logic;
-            trig            : in std_logic;
-            integrationTime : in natural;
+    port (
+        clock           : in std_logic;
+        reset           : in std_logic;
+        trig            : in std_logic;
+        integrationTime : in natural;
+        commandCount    : in unsigned(31 downto 0);
 
-            txByte  : out std_logic_vector(7 downto 0);
-            txValid : out std_logic;
-            txWait  : in  std_logic;
+        txByte  : out std_logic_vector(7 downto 0);
+        txValid : out std_logic;
+        txWait  : in  std_logic;
 
-            done : out std_logic;
-            addr : out std_logic_vector(8 downto 0);
-            data : in  std_logic_vector(15 downto 0)
+        done : out std_logic;
+        addr : out std_logic_vector(8 downto 0);
+        data : in  std_logic_vector(15 downto 0)
         );
     end component;
 

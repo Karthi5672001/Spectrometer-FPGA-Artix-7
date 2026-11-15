@@ -20,11 +20,12 @@ entity binaryReadout is
         reset : in std_logic;
         -- Pulse indicating that a newly captured spectrum is ready
         trig  : in std_logic;
-
+        
         -- Integration time associated with the current spectrum
         -- Included in the transmitted metadata
         integrationTime : in natural;
 
+        commandCount : in unsigned(31 downto 0);
 
         -----------------------------------------------------------------------
         -- Byte-transmitter interface
@@ -101,7 +102,7 @@ architecture Behavioral of binaryReadout is
     ---------------------------------------------------------------------------
 
     signal metadataIndex :
-        natural range 0 to 17 := 0;
+        natural range 0 to 21 := 0;
 
 
     ---------------------------------------------------------------------------
@@ -179,8 +180,12 @@ architecture Behavioral of binaryReadout is
     -- 13     Integration count [23:16]
     -- 14     Integration count [15:8]
     -- 15     Integration count [7:0]
-    -- 16     Pixel count high byte
-    -- 17     Pixel count low byte
+    -- 16     Command count [31:24]
+    -- 17     Command count [23:16]
+    -- 18     Command count [15:8]
+    -- 19     Command count [7:0]
+    -- 20     Pixel count high byte
+    -- 21     Pixel count low byte
     --
     -- Complete frame:
     --
@@ -193,7 +198,8 @@ architecture Behavioral of binaryReadout is
     function metadataByte (
         indexValue     : natural;
         sequenceValue  : unsigned(31 downto 0);
-        integrationVal : unsigned(31 downto 0)
+        integrationVal : unsigned(31 downto 0);
+        commandVal     : unsigned(31 downto 0)
     ) return std_logic_vector is
 
         constant remainingLength :
@@ -283,10 +289,30 @@ architecture Behavioral of binaryReadout is
 
             when 16 =>
                 return std_logic_vector(
+                    commandVal(31 downto 24)
+                );
+            
+            when 17 =>
+                return std_logic_vector(
+                    commandVal(23 downto 16)
+                );
+            
+            when 18 =>
+                return std_logic_vector(
+                    commandVal(15 downto 8)
+                );
+            
+            when 19 =>
+                return std_logic_vector(
+                    commandVal(7 downto 0)
+                );
+            
+            when 20 =>
+                return std_logic_vector(
                     pixelCount(15 downto 8)
                 );
-
-            when 17 =>
+            
+            when 21 =>
                 return std_logic_vector(
                     pixelCount(7 downto 0)
                 );
@@ -377,8 +403,16 @@ begin
                             (others => '0');
 
                         if trig = '1' then
-                            done <=
-                                '0';
+
+                            report "BINARY READOUT TRIGGERED";
+                        
+                            report "Integration Time = "
+                                & integer'image(integrationTime);
+                        
+                            report "Command Count = "
+                                & integer'image(to_integer(commandCount));
+                        
+                            done <= '0';
 
                             capturedIntegrationTime <=
                                 to_unsigned(
@@ -416,7 +450,8 @@ begin
                                 metadataByte(
                                     metadataIndex,
                                     frameSequence,
-                                    capturedIntegrationTime
+                                    capturedIntegrationTime,
+                                    commandCount
                                 );
 
                             txByte <=
@@ -433,7 +468,7 @@ begin
                                     );
                             end if;
 
-                            if metadataIndex = 17 then
+                            if metadataIndex = 21 then
                                 pixelIndex <=
                                     0;
 
