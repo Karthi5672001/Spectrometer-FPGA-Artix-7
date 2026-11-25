@@ -1,0 +1,14 @@
+===================================
+Configuration Memory information
+===================================
+File Format        BIN
+Interface          SPIX4
+Size               4M
+Start Address      0x00000000
+End Address        0x003FFFFF
+Checksum           0x1E8245D7
+Fill Value         0xFF
+
+Addr1         Addr2         Date                    File(s)                                                                                                                                    Checksum
+0x00000000    0x0021728B    Nov 25 17:20:33 2026    																	       0x00135F4B
+File Checksum Total                                                                                                                                                                            0x00135F4B
